@@ -49,8 +49,8 @@ body::before {
   align-items: center;
   justify-content: center;
   height: 100dvh;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 22vw);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2vw);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   position: relative;
@@ -67,30 +67,37 @@ body::before {
 }
 
 /* ── NAV ── */
+/* ── NAV — fixée en haut ── */
 .nav {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0; right: 0;
   display: flex;
   align-items: center;
-  gap: 28px;
-  margin-bottom: 24px;
+  justify-content: center;
+  gap: 8vw;
+  padding: 5vw 6vw 4vw;
+  z-index: 10;
+  background: linear-gradient(to bottom, rgba(8,10,15,0.95) 60%, transparent);
 }
 .arrow {
-  width: 42px; height: 42px;
+  width: 13vw; height: 13vw;
   border: 1.5px solid var(--border);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  background: rgba(255,255,255,0.03);
+  background: rgba(255,255,255,0.04);
   transition: transform 0.1s;
 }
 .arrow:active { transform: scale(0.88); }
-.arrow svg { width: 16px; height: 16px; pointer-events: none; }
+.arrow svg { width: 5vw; height: 5vw; pointer-events: none; }
 .nav-label {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 3.5vw;
   letter-spacing: 0.25em;
   color: var(--sub);
   text-transform: uppercase;
-  min-width: 100px;
+  min-width: 30vw;
   text-align: center;
 }
 
@@ -99,24 +106,24 @@ body::before {
 .page { display: flex; flex-direction: column; align-items: center; gap: 0; }
 .page-title {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 3vw;
   letter-spacing: 0.3em;
   color: var(--sub);
   text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 5vw;
 }
 
-/* ── GLASS CARD wrapping gauge content ── */
+/* ── GLASS CARD ── */
 .glass-card {
-  border-radius: 36px;
-  padding: 28px 24px 24px;
+  border-radius: 10vw;
+  padding: 7vw 6vw 6vw;
 }
 
 /* ── GAUGE TRACK ── */
 .gauge-track {
-  width: 68px;
-  height: 300px;
-  border-radius: 34px;
+  width: 20vw;
+  height: 55vw;
+  border-radius: 10vw;
   background: rgba(0,0,0,0.25);
   border: 1px solid rgba(255,255,255,0.10);
   position: relative;
@@ -146,28 +153,28 @@ body::before {
 /* ── VALUE ── */
 .gauge-value {
   font-family: 'DM Mono', monospace;
-  font-size: 28px;
+  font-size: 8vw;
   font-weight: 300;
-  margin-top: 16px;
+  margin-top: 4vw;
   text-align: center;
   transition: color 0.3s;
 }
 .gauge-value.color-orange { color: var(--orange); }
 .gauge-value.color-white  { color: rgba(255,255,255,0.9); }
-.gauge-value.off           { color: var(--sub); }
+.gauge-value.off          { color: var(--sub); }
 
 /* ── SWITCH ── */
-.switch-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.switch-row { display: flex; align-items: center; gap: 3vw; margin-top: 4vw; }
 .switch-label {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 2.8vw;
   letter-spacing: 0.22em;
   color: var(--sub);
   text-transform: uppercase;
 }
 .switch {
-  width: 50px; height: 26px;
-  border-radius: 13px;
+  width: 15vw; height: 8vw;
+  border-radius: 4vw;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
   position: relative;
@@ -178,24 +185,24 @@ body::before {
 .switch.on-white  { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 12px rgba(255,255,255,0.12); }
 .switch-thumb {
   position: absolute;
-  top: 3px; left: 3px;
-  width: 18px; height: 18px;
+  top: 1vw; left: 1vw;
+  width: 6vw; height: 6vw;
   border-radius: 50%;
   background: rgba(255,255,255,0.3);
   transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-.switch.on-orange .switch-thumb { left: 27px; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
-.switch.on-white  .switch-thumb { left: 27px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
+.switch.on-orange .switch-thumb { left: 8vw; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+.switch.on-white  .switch-thumb { left: 8vw; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
 
 /* ── AMBIANCE layout ── */
-.ambiance-body { display: flex; align-items: flex-start; gap: 20px; }
+.ambiance-body { display: flex; align-items: flex-start; gap: 5vw; }
 .gauge-col { display: flex; flex-direction: column; align-items: center; }
 
 /* ── WHEEL ── */
-.wheel-col { display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 4px; }
-.wheel-wrap { position: relative; width: 148px; height: 148px; touch-action: none; cursor: crosshair; }
+.wheel-col { display: flex; flex-direction: column; align-items: center; gap: 4vw; padding-top: 1vw; }
+.wheel-wrap { position: relative; width: 42vw; height: 42vw; touch-action: none; cursor: crosshair; }
 canvas.wheel {
-  width: 148px; height: 148px;
+  width: 42vw; height: 42vw;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
@@ -204,7 +211,7 @@ canvas.wheel {
 canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 .wcursor {
   position: absolute;
-  width: 15px; height: 15px;
+  width: 4.5vw; height: 4.5vw;
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 8px rgba(0,0,0,0.5);
@@ -214,14 +221,14 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 }
 .circle-btn {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 3vw;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.4);
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.05);
-  border-radius: 20px;
-  padding: 7px 18px;
+  border-radius: 6vw;
+  padding: 2.5vw 5vw;
   cursor: pointer;
   transition: all 0.25s;
 }
@@ -229,9 +236,9 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 .circle-btn.active { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); box-shadow: 0 0 14px rgba(255,255,255,0.08); }
 
 /* ── DOTS ── */
-.dots { display: flex; gap: 7px; margin-top: 20px; }
+.dots { display: flex; gap: 2vw; margin-top: 5vw; }
 .dot {
-  width: 5px; height: 5px;
+  width: 1.5vw; height: 1.5vw;
   border-radius: 50%;
   background: rgba(255,255,255,0.13);
   cursor: pointer;
@@ -324,7 +331,7 @@ let circleOn = false;
 // ═══════════════════════════
 //  LIQUID ENGINE — 60fps
 // ═══════════════════════════
-const TRACK_H = 300;
+const TRACK_H = Math.round(window.innerWidth * 0.55);
 
 const liqState = [
   { phase: 0, velY: 0, currentH: 0 },
@@ -529,8 +536,10 @@ const wCursor = document.getElementById('wCursor');
 })();
 
 function placeCursor(h, s) {
-  const x = 74 + Math.cos(h * Math.PI / 180) * s * 68;
-  const y = 74 + Math.sin(h * Math.PI / 180) * s * 68;
+  const half = window.innerWidth * 0.21; // 42vw / 2
+  const edge = half * 0.92;
+  const x = half + Math.cos(h * Math.PI / 180) * s * edge;
+  const y = half + Math.sin(h * Math.PI / 180) * s * edge;
   wCursor.style.left = x + 'px';
   wCursor.style.top  = y + 'px';
   const l = 50 + (1 - s) * 44;
@@ -543,14 +552,15 @@ let wDrag = false;
 function handleWheel(e) {
   if (!channels[1].on) return;
   const rect  = wCanvas.getBoundingClientRect();
-  const scale = 148 / rect.width;
+  const half = rect.width / 2;
+  const edge = half * 0.92;
   const cx = e.touches ? e.touches[0].clientX : e.clientX;
   const cy = e.touches ? e.touches[0].clientY : e.clientY;
-  const dx = (cx - rect.left) * scale - 74;
-  const dy = (cy - rect.top)  * scale - 74;
+  const dx = (cx - rect.left) - half;
+  const dy = (cy - rect.top)  - half;
   const dist = Math.sqrt(dx*dx + dy*dy);
-  if (dist > 74) return;
-  wSat = Math.min(1, dist / 68);
+  if (dist > half) return;
+  wSat = Math.min(1, dist / edge);
   wHue = ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
   placeCursor(wHue, wSat);
 }
