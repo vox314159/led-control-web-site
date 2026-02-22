@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080a0f">
+<title>LED Control</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080a0f;
+  --orange: #ff6b35;
+  --border: rgba(255,255,255,0.08);
+  --sub: rgba(255,255,255,0.28);
+}
+
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg);
+  font-family: 'Syne', sans-serif;
+  color: rgba(255,255,255,0.85);
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── BACKGROUND subtle noise ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 80%, rgba(255,107,53,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(120,160,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  position: relative;
+  z-index: 1;
+}
+
+/* ════════════════════════════════
+   GLASS CARD — cadre blanc React Bits
+   ════════════════════════════════ */
+.glass-card {
+  box-shadow:
+    0 0 2px 1px color-mix(in oklch, white, transparent 65%) inset,
+    0 0 10px 4px color-mix(in oklch, white, transparent 85%) inset;
+}
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 24px;
+}
+.arrow {
+  width: 42px; height: 42px;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  transition: transform 0.1s;
+}
+.arrow:active { transform: scale(0.88); }
+.arrow svg { width: 16px; height: 16px; pointer-events: none; }
+.nav-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--sub);
+  text-transform: uppercase;
+  min-width: 100px;
+  text-align: center;
+}
+
+/* ── PAGES ── */
+#gaugeWrap { will-change: transform, opacity; }
+.page { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.page-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--sub);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+/* ── GLASS CARD wrapping gauge content ── */
+.glass-card {
+  border-radius: 36px;
+  padding: 28px 24px 24px;
+}
+
+/* ── GAUGE TRACK ── */
+.gauge-track {
+  width: 68px;
+  height: 300px;
+  border-radius: 34px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.10);
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+  transition: box-shadow 0.4s;
+  overflow: hidden;
+}
+.gauge-track.glow-orange {
+  box-shadow: 0 0 30px 4px rgba(255,107,53,0.35), 0 0 60px 12px rgba(255,107,53,0.12);
+}
+.gauge-track.glow-white {
+  box-shadow: 0 0 30px 4px rgba(255,255,255,0.18), 0 0 60px 12px rgba(255,255,255,0.06);
+}
+
+.liquid-canvas {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+.gauge-track.off-state .liquid-canvas {
+  opacity: 0.15;
+  filter: saturate(0);
+}
+
+/* ── VALUE ── */
+.gauge-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 28px;
+  font-weight: 300;
+  margin-top: 16px;
+  text-align: center;
+  transition: color 0.3s;
+}
+.gauge-value.color-orange { color: var(--orange); }
+.gauge-value.color-white  { color: rgba(255,255,255,0.9); }
+.gauge-value.off           { color: var(--sub); }
+
+/* ── SWITCH ── */
+.switch-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.switch-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--sub);
+  text-transform: uppercase;
+}
+.switch {
+  width: 50px; height: 26px;
+  border-radius: 13px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.switch.on-orange { background: rgba(255,107,53,0.18); border-color: rgba(255,107,53,0.5); box-shadow: 0 0 12px rgba(255,107,53,0.25); }
+.switch.on-white  { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 12px rgba(255,255,255,0.12); }
+.switch-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.switch.on-orange .switch-thumb { left: 27px; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+.switch.on-white  .switch-thumb { left: 27px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
+
+/* ── AMBIANCE layout ── */
+.ambiance-body { display: flex; align-items: flex-start; gap: 20px; }
+.gauge-col { display: flex; flex-direction: column; align-items: center; }
+
+/* ── WHEEL ── */
+.wheel-col { display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 4px; }
+.wheel-wrap { position: relative; width: 148px; height: 148px; touch-action: none; cursor: crosshair; }
+canvas.wheel {
+  width: 148px; height: 148px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  display: block;
+  transition: box-shadow 0.4s;
+}
+canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
+.wcursor {
+  position: absolute;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  pointer-events: none;
+  transform: translate(-50%,-50%);
+  top: 50%; left: 50%;
+}
+.circle-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.circle-btn:active { transform: scale(0.93); }
+.circle-btn.active { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); box-shadow: 0 0 14px rgba(255,255,255,0.08); }
+
+/* ── DOTS ── */
+.dots { display: flex; gap: 7px; margin-top: 20px; }
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.13);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.dot.on-orange { background: var(--orange); box-shadow: 0 0 7px var(--orange); }
+.dot.on-white  { background: rgba(255,255,255,0.7); box-shadow: 0 0 7px rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="nav">
+    <div class="arrow" id="prev">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </div>
+    <div class="nav-label" id="navLabel">Canal LED</div>
+    <div class="arrow" id="next">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+    </div>
+  </div>
+
+  <div id="gaugeWrap">
+
+    <!-- PAGE 0 : LED -->
+    <div class="page" id="page0">
+      <div class="page-title">Canal LED</div>
+      <div class="glass-card" style="border-radius:36px;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="gauge-track off-state" id="track0">
+            <canvas class="liquid-canvas" id="liq0"></canvas>
+          </div>
+          <div class="gauge-value off" id="val0">0%</div>
+          <div class="switch-row">
+            <div class="switch-label">OFF</div>
+            <div class="switch" id="sw0"><div class="switch-thumb"></div></div>
+            <div class="switch-label">ON</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 1 : AMBIANCE -->
+    <div class="page" id="page1" style="display:none">
+      <div class="page-title">Canal Ambiance</div>
+      <div class="glass-card" style="border-radius:36px;">
+        <div class="ambiance-body">
+          <div class="gauge-col">
+            <div class="gauge-track off-state" id="track1">
+              <canvas class="liquid-canvas" id="liq1"></canvas>
+            </div>
+            <div class="gauge-value off" id="val1">0%</div>
+            <div class="switch-row">
+              <div class="switch-label">OFF</div>
+              <div class="switch" id="sw1"><div class="switch-thumb"></div></div>
+              <div class="switch-label">ON</div>
+            </div>
+          </div>
+          <div class="wheel-col">
+            <div class="wheel-wrap">
+              <canvas class="wheel" id="wCanvas" width="296" height="296"></canvas>
+              <div class="wcursor" id="wCursor"></div>
+            </div>
+            <button class="circle-btn" id="circleBtn">CIRCLE</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="dots">
+    <div class="dot on-orange" data-i="0"></div>
+    <div class="dot" data-i="1"></div>
+  </div>
+
+</div>
+<script>
+// ═══════════════════════════
+//  STATE
+// ═══════════════════════════
+const channels = [
+  { on: false, value: 0, color: 'orange' },
+  { on: false, value: 0, color: 'white'  },
+];
+let current = 0;
+let wHue = 0, wSat = 0;
+let circleOn = false;
+
+// ═══════════════════════════
+//  LIQUID ENGINE — 60fps
+// ═══════════════════════════
+const TRACK_H = 300;
+
+const liqState = [
+  { phase: 0, velY: 0, currentH: 0 },
+  { phase: 0, velY: 0, currentH: 0 },
+];
+
+const canvases = [document.getElementById('liq0'), document.getElementById('liq1')];
+
+const palette = {
+  orange: {
+    body0: 'rgba(255,100,30,0.92)', body1: 'rgba(220,55,5,0.98)',
+    wave:  'rgba(255,160,80,0.6)',  shine: 'rgba(255,210,160,0.15)',
+  },
+  white: {
+    body0: 'rgba(210,225,245,0.72)', body1: 'rgba(180,200,230,0.82)',
+    wave:  'rgba(255,255,255,0.6)',  shine: 'rgba(255,255,255,0.13)',
+  },
+};
+
+function drawLiquid(idx) {
+  const ls  = liqState[idx];
+  const ch  = channels[idx];
+  const cvs = canvases[idx];
+  const ctx = cvs.getContext('2d');
+  const pal = palette[ch.color];
+  const W   = 68;
+  const H   = ls.currentH;
+
+  if (H < 1) { ctx.clearRect(0, 0, W, cvs.height || 1); return; }
+
+  const extra = 14;
+  cvs.width  = W;
+  cvs.height = Math.ceil(H) + extra;
+  ctx.clearRect(0, 0, W, cvs.height);
+
+  const amp  = Math.min(5, H * 0.05 + 1);
+  const ph   = ls.phase;
+  const osc  = Math.sin(ph * 1.6) * Math.min(2.5, Math.abs(ls.velY) * 0.5 + 0.3);
+  const topY = amp + osc + 2;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, cvs.height);
+  grad.addColorStop(0, pal.body0);
+  grad.addColorStop(1, pal.body1);
+
+  ctx.beginPath();
+  ctx.moveTo(0, cvs.height);
+  ctx.lineTo(0, topY);
+  for (let x = 0; x <= W; x++) {
+    const y = amp * Math.sin((x / W) * Math.PI * 2.2 + ph)
+            + amp * 0.35 * Math.sin((x / W) * Math.PI * 4.5 + ph * 1.4)
+            + osc + amp + 2;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, cvs.height);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  for (let x = 0; x <= W; x++) {
+    const y = amp * Math.sin((x / W) * Math.PI * 2.2 + ph)
+            + amp * 0.35 * Math.sin((x / W) * Math.PI * 4.5 + ph * 1.4)
+            + osc + amp + 2;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = pal.wave;
+  ctx.lineWidth   = 1.5;
+  ctx.stroke();
+
+  const shine = ctx.createLinearGradient(0, 0, W * 0.38, 0);
+  shine.addColorStop(0, pal.shine);
+  shine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = shine;
+  ctx.fillRect(4, topY + 4, W * 0.32, cvs.height);
+}
+
+const FPS = 30;
+const FRAME_MS = 1000 / FPS;
+let lastFrame = 0;
+
+function animLoop(ts) {
+  requestAnimationFrame(animLoop);
+  if (ts - lastFrame < FRAME_MS) return;
+  lastFrame = ts;
+
+  for (let i = 0; i < 2; i++) {
+    const ls = liqState[i];
+    const target = TRACK_H * channels[i].value / 100;
+    const diff = target - ls.currentH;
+    ls.velY = ls.velY * 0.70 + diff * 0.20;
+    ls.currentH += ls.velY;
+    ls.currentH = Math.max(0, Math.min(TRACK_H, ls.currentH));
+    ls.phase += 0.045;
+
+    const cvs = canvases[i];
+    cvs.style.height = ls.currentH + 'px';
+    drawLiquid(i);
+  }
+}
+requestAnimationFrame(animLoop);
+
+// ═══════════════════════════
+//  UI REFS
+// ═══════════════════════════
+const track0  = document.getElementById('track0');
+const track1  = document.getElementById('track1');
+const val0    = document.getElementById('val0');
+const val1    = document.getElementById('val1');
+const sw0     = document.getElementById('sw0');
+const sw1     = document.getElementById('sw1');
+const wrap    = document.getElementById('gaugeWrap');
+const page0   = document.getElementById('page0');
+const page1   = document.getElementById('page1');
+const navLbl  = document.getElementById('navLabel');
+const dotsEls = document.querySelectorAll('.dot');
+
+function renderCh(idx) {
+  const ch = channels[idx];
+  const tr = idx === 0 ? track0 : track1;
+  const ve = idx === 0 ? val0   : val1;
+  const sw = idx === 0 ? sw0    : sw1;
+
+  tr.className = 'gauge-track' + (ch.on ? ` glow-${ch.color}` : ' off-state');
+  ve.className = 'gauge-value' + (ch.on ? ` color-${ch.color}` : ' off');
+  ve.textContent = Math.round(ch.value) + '%';
+  sw.className = 'switch' + (ch.on ? ` on-${ch.color}` : '');
+
+  if (idx === 1) {
+    document.getElementById('wCanvas').className = 'wheel' + (ch.on ? ' glow-on' : '');
+    placeCursor(wHue, wSat);
+  }
+}
+
+function renderNav() {
+  navLbl.textContent = current === 0 ? 'Canal LED' : 'Canal Ambiance';
+  dotsEls.forEach((d, i) => {
+    d.className = i === current ? `dot on-${channels[i].color}` : 'dot';
+  });
+}
+
+// ═══════════════════════════
+//  GAUGE DRAG
+// ═══════════════════════════
+function setupDrag(trackEl, idx) {
+  let drag = false;
+  function pct(e) {
+    const r  = trackEl.getBoundingClientRect();
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    return Math.max(0, Math.min(100, ((r.bottom - cy) / r.height) * 100));
+  }
+  trackEl.addEventListener('pointerdown', e => { drag = true; trackEl.setPointerCapture(e.pointerId); channels[idx].value = pct(e); renderCh(idx); });
+  trackEl.addEventListener('pointermove', e => { if (!drag) return; channels[idx].value = pct(e); renderCh(idx); });
+  trackEl.addEventListener('pointerup',    () => { drag = false; });
+  trackEl.addEventListener('pointercancel',() => { drag = false; });
+}
+setupDrag(track0, 0);
+setupDrag(track1, 1);
+
+// ═══════════════════════════
+//  SWITCHES
+// ═══════════════════════════
+sw0.addEventListener('click', () => { channels[0].on = !channels[0].on; renderCh(0); });
+sw1.addEventListener('click', () => { channels[1].on = !channels[1].on; renderCh(1); });
+
+// ═══════════════════════════
+//  COLOR WHEEL
+// ═══════════════════════════
+const wCanvas = document.getElementById('wCanvas');
+const wCtx    = wCanvas.getContext('2d');
+const wCursor = document.getElementById('wCursor');
+
+(function drawWheel() {
+  const size = 296;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 2;
+
+  // Canvas offscreen — dessin lourd fait une seule fois hors DOM
+  const off = document.createElement('canvas');
+  off.width = off.height = size;
+  const octx = off.getContext('2d');
+
+  // Tranches de 2° — assez précis, moitié moins d'opérations
+  for (let a = 0; a < 360; a += 2) {
+    const s = a * Math.PI / 180, e = (a + 3) * Math.PI / 180;
+    const g = octx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    g.addColorStop(0,    `hsla(${a},0%,100%,1)`);
+    g.addColorStop(0.45, `hsla(${a},100%,55%,1)`);
+    g.addColorStop(1,    `hsla(${a},100%,12%,1)`);
+    octx.beginPath(); octx.moveTo(cx, cy);
+    octx.arc(cx, cy, r, s, e); octx.closePath();
+    octx.fillStyle = g; octx.fill();
+  }
+
+  // Vignette
+  const vig = octx.createRadialGradient(cx, cy, r * 0.6, cx, cy, r);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,0,0.28)');
+  octx.beginPath(); octx.arc(cx, cy, r, 0, Math.PI * 2);
+  octx.fillStyle = vig; octx.fill();
+
+  // Copie unique vers le canvas visible — statique, jamais retouché
+  wCtx.drawImage(off, 0, 0);
+})();
+
+function placeCursor(h, s) {
+  const x = 74 + Math.cos(h * Math.PI / 180) * s * 68;
+  const y = 74 + Math.sin(h * Math.PI / 180) * s * 68;
+  wCursor.style.left = x + 'px';
+  wCursor.style.top  = y + 'px';
+  const l = 50 + (1 - s) * 44;
+  const col = `hsl(${Math.round(h)},${Math.round(s*100)}%,${Math.round(l)}%)`;
+  wCursor.style.background = col;
+  wCursor.style.boxShadow  = `0 0 8px ${col}, 0 2px 5px rgba(0,0,0,0.5)`;
+}
+
+let wDrag = false;
+function handleWheel(e) {
+  if (!channels[1].on) return;
+  const rect  = wCanvas.getBoundingClientRect();
+  const scale = 148 / rect.width;
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  const dx = (cx - rect.left) * scale - 74;
+  const dy = (cy - rect.top)  * scale - 74;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist > 74) return;
+  wSat = Math.min(1, dist / 68);
+  wHue = ((Math.atan2(dy, dx) * 180 / Math.PI) + 360) % 360;
+  placeCursor(wHue, wSat);
+}
+wCanvas.addEventListener('pointerdown', e => { if (!channels[1].on) return; wDrag = true; wCanvas.setPointerCapture(e.pointerId); handleWheel(e); });
+wCanvas.addEventListener('pointermove', e => { if (wDrag) handleWheel(e); });
+wCanvas.addEventListener('pointerup',    () => { wDrag = false; });
+wCanvas.addEventListener('pointercancel',() => { wDrag = false; });
+
+document.getElementById('circleBtn').addEventListener('click', () => {
+  circleOn = !circleOn;
+  document.getElementById('circleBtn').classList.toggle('active', circleOn);
+});
+
+// ═══════════════════════════
+//  NAVIGATION
+// ═══════════════════════════
+function goTo(idx, dir) {
+  const T = 130;
+  wrap.style.transition = `opacity ${T}ms, transform ${T}ms`;
+  wrap.style.opacity = '0';
+  wrap.style.transform = `translateX(${dir * 28}px)`;
+  setTimeout(() => {
+    current = idx;
+    page0.style.display = idx === 0 ? 'flex' : 'none';
+    page1.style.display = idx === 1 ? 'flex' : 'none';
+    renderNav(); renderCh(current);
+    wrap.style.transition = 'none';
+    wrap.style.transform = `translateX(${-dir * 22}px)`;
+    wrap.style.opacity = '0';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      wrap.style.transition = `opacity ${T}ms, transform ${T}ms`;
+      wrap.style.opacity = '1';
+      wrap.style.transform = 'translateX(0)';
+    }));
+  }, T);
+}
+
+document.getElementById('prev').addEventListener('click', () => goTo((current - 1 + 2) % 2, -1));
+document.getElementById('next').addEventListener('click', () => goTo((current + 1) % 2, 1));
+dotsEls.forEach((d, i) => d.addEventListener('click', () => { if (i !== current) goTo(i, i > current ? 1 : -1); }));
+
+// SWIPE pour changer de canal
+let swipeStartX = 0, swipeStartY = 0;
+document.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  const dy = e.changedTouches[0].clientY - swipeStartY;
+  if (Math.abs(dy) > 60) return;
+  if (Math.abs(dx) < 50) return;
+  if (dx < 0) goTo((current + 1) % 2, 1);
+  else goTo((current - 1 + 2) % 2, -1);
+}, { passive: true });
+
+// ═══════════════════════════
+//  INIT
+// ═══════════════════════════
+placeCursor(0, 0);
+renderCh(0);
+renderCh(1);
+renderNav();
+</script>
+</body>
+</html>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
+</script>
