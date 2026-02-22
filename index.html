@@ -116,7 +116,7 @@ body::before {
 /* ── GLASS CARD ── */
 .glass-card {
   border-radius: 13vw;
-  padding: 8vw 7vw 7vw;
+  padding: 8vw 5vw 6vw;
 }
 
 /* ── GAUGE TRACK ── */
@@ -195,14 +195,14 @@ body::before {
 .switch.on-white  .switch-thumb { left: 9.5vw; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
 
 /* ── AMBIANCE layout ── */
-.ambiance-body { display: flex; align-items: flex-start; gap: 6vw; }
+.ambiance-body { display: flex; align-items: flex-start; gap: 4vw; }
 .gauge-col { display: flex; flex-direction: column; align-items: center; }
 
 /* ── WHEEL ── */
 .wheel-col { display: flex; flex-direction: column; align-items: center; gap: 4vw; padding-top: 1vw; }
-.wheel-wrap { position: relative; width: 48vw; height: 48vw; touch-action: none; cursor: crosshair; }
+.wheel-wrap { position: relative; width: 38vw; height: 38vw; touch-action: none; cursor: crosshair; }
 canvas.wheel {
-  width: 48vw; height: 48vw;
+  width: 38vw; height: 38vw;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
@@ -541,7 +541,7 @@ const wCursor = document.getElementById('wCursor');
 })();
 
 function placeCursor(h, s) {
-  const half = window.innerWidth * 0.24; // 42vw / 2
+  const half = window.innerWidth * 0.19; // 42vw / 2
   const edge = half * 0.92;
   const x = half + Math.cos(h * Math.PI / 180) * s * edge;
   const y = half + Math.sin(h * Math.PI / 180) * s * edge;
