@@ -106,23 +106,23 @@ body::before {
 .page { display: flex; flex-direction: column; align-items: center; gap: 0; }
 .page-title {
   font-family: 'DM Mono', monospace;
-  font-size: 3vw;
+  font-size: 3.8vw;
   letter-spacing: 0.3em;
   color: var(--sub);
   text-transform: uppercase;
-  margin-bottom: 5vw;
+  margin-bottom: 6vw;
 }
 
 /* ── GLASS CARD ── */
 .glass-card {
-  border-radius: 10vw;
-  padding: 7vw 6vw 6vw;
+  border-radius: 13vw;
+  padding: 8vw 7vw 7vw;
 }
 
 /* ── GAUGE TRACK ── */
 .gauge-track {
-  width: 20vw;
-  height: 55vw;
+  width: 26vw;
+  height: 68vw;
   border-radius: 10vw;
   background: rgba(0,0,0,0.25);
   border: 1px solid rgba(255,255,255,0.10);
@@ -153,9 +153,9 @@ body::before {
 /* ── VALUE ── */
 .gauge-value {
   font-family: 'DM Mono', monospace;
-  font-size: 8vw;
+  font-size: 10vw;
   font-weight: 300;
-  margin-top: 4vw;
+  margin-top: 5vw;
   text-align: center;
   transition: color 0.3s;
 }
@@ -164,17 +164,17 @@ body::before {
 .gauge-value.off          { color: var(--sub); }
 
 /* ── SWITCH ── */
-.switch-row { display: flex; align-items: center; gap: 3vw; margin-top: 4vw; }
+.switch-row { display: flex; align-items: center; gap: 4vw; margin-top: 5vw; }
 .switch-label {
   font-family: 'DM Mono', monospace;
-  font-size: 2.8vw;
+  font-size: 3.5vw;
   letter-spacing: 0.22em;
   color: var(--sub);
   text-transform: uppercase;
 }
 .switch {
-  width: 15vw; height: 8vw;
-  border-radius: 4vw;
+  width: 18vw; height: 9.5vw;
+  border-radius: 5vw;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.10);
   position: relative;
@@ -185,24 +185,24 @@ body::before {
 .switch.on-white  { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 12px rgba(255,255,255,0.12); }
 .switch-thumb {
   position: absolute;
-  top: 1vw; left: 1vw;
-  width: 6vw; height: 6vw;
+  top: 1.2vw; left: 1.2vw;
+  width: 7vw; height: 7vw;
   border-radius: 50%;
   background: rgba(255,255,255,0.3);
   transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
 }
-.switch.on-orange .switch-thumb { left: 8vw; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
-.switch.on-white  .switch-thumb { left: 8vw; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
+.switch.on-orange .switch-thumb { left: 9.5vw; background: var(--orange); box-shadow: 0 0 8px var(--orange); }
+.switch.on-white  .switch-thumb { left: 9.5vw; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
 
 /* ── AMBIANCE layout ── */
-.ambiance-body { display: flex; align-items: flex-start; gap: 5vw; }
+.ambiance-body { display: flex; align-items: flex-start; gap: 6vw; }
 .gauge-col { display: flex; flex-direction: column; align-items: center; }
 
 /* ── WHEEL ── */
 .wheel-col { display: flex; flex-direction: column; align-items: center; gap: 4vw; padding-top: 1vw; }
-.wheel-wrap { position: relative; width: 42vw; height: 42vw; touch-action: none; cursor: crosshair; }
+.wheel-wrap { position: relative; width: 48vw; height: 48vw; touch-action: none; cursor: crosshair; }
 canvas.wheel {
-  width: 42vw; height: 42vw;
+  width: 48vw; height: 48vw;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
@@ -211,7 +211,7 @@ canvas.wheel {
 canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 .wcursor {
   position: absolute;
-  width: 4.5vw; height: 4.5vw;
+  width: 5vw; height: 5vw;
   border-radius: 50%;
   border: 2px solid #fff;
   box-shadow: 0 0 8px rgba(0,0,0,0.5);
@@ -221,14 +221,14 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 }
 .circle-btn {
   font-family: 'DM Mono', monospace;
-  font-size: 3vw;
+  font-size: 3.8vw;
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.4);
   border: 1px solid rgba(255,255,255,0.10);
   background: rgba(255,255,255,0.05);
   border-radius: 6vw;
-  padding: 2.5vw 5vw;
+  padding: 3vw 6vw;
   cursor: pointer;
   transition: all 0.25s;
 }
@@ -236,9 +236,14 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 .circle-btn.active { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); box-shadow: 0 0 14px rgba(255,255,255,0.08); }
 
 /* ── DOTS ── */
-.dots { display: flex; gap: 2vw; margin-top: 5vw; }
+.dots {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 6vw);
+  left: 50%; transform: translateX(-50%);
+  display: flex; gap: 3vw;
+}
 .dot {
-  width: 1.5vw; height: 1.5vw;
+  width: 2.2vw; height: 2.2vw;
   border-radius: 50%;
   background: rgba(255,255,255,0.13);
   cursor: pointer;
@@ -331,7 +336,7 @@ let circleOn = false;
 // ═══════════════════════════
 //  LIQUID ENGINE — 60fps
 // ═══════════════════════════
-const TRACK_H = Math.round(window.innerWidth * 0.55);
+const TRACK_H = Math.round(window.innerWidth * 0.68);
 
 const liqState = [
   { phase: 0, velY: 0, currentH: 0 },
@@ -536,7 +541,7 @@ const wCursor = document.getElementById('wCursor');
 })();
 
 function placeCursor(h, s) {
-  const half = window.innerWidth * 0.21; // 42vw / 2
+  const half = window.innerWidth * 0.24; // 42vw / 2
   const edge = half * 0.92;
   const x = half + Math.cos(h * Math.PI / 180) * s * edge;
   const y = half + Math.sin(h * Math.PI / 180) * s * edge;
