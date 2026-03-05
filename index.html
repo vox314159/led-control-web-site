@@ -235,6 +235,95 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 .circle-btn:active { transform: scale(0.93); }
 .circle-btn.active { color: #fff; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); box-shadow: 0 0 14px rgba(255,255,255,0.08); }
 
+/* ── INDICATEUR CONNEXION ── */
+.conn-dot {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 3.5vw);
+  right: 4vw;
+  width: 2.5vw; height: 2.5vw;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  z-index: 20;
+  transition: background 0.4s;
+}
+.conn-dot.connected    { background: #4cff72; box-shadow: 0 0 8px #4cff72; }
+.conn-dot.disconnected { background: #ff4444; box-shadow: 0 0 8px #ff4444; }
+
+/* ── BOUTON CONFIG ── */
+.cfg-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 2vw);
+  left: 4vw;
+  width: 9vw; height: 9vw;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+}
+.cfg-btn svg { width: 4.5vw; height: 4.5vw; }
+
+/* ── MODALE CONFIG ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #0e1117;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8vw;
+  padding: 8vw;
+  width: 80vw;
+  box-shadow: 0 0 2px 1px color-mix(in oklch, white, transparent 65%) inset;
+}
+.modal h3 {
+  font-family: 'DM Mono', monospace;
+  font-size: 3.5vw;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 5vw;
+  text-align: center;
+}
+.modal input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3vw;
+  padding: 3.5vw 4vw;
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 4vw;
+  outline: none;
+  margin-bottom: 5vw;
+}
+.modal-btns { display: flex; gap: 3vw; }
+.modal-btn {
+  flex: 1;
+  padding: 3.5vw;
+  border-radius: 3vw;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.6);
+  font-family: 'DM Mono', monospace;
+  font-size: 3vw;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.modal-btn.primary {
+  background: rgba(255,107,53,0.18);
+  border-color: rgba(255,107,53,0.5);
+  color: var(--orange);
+}
+
 /* ── DOTS ── */
 .dots {
   position: fixed;
@@ -255,6 +344,29 @@ canvas.wheel.glow-on { box-shadow: 0 0 22px 4px rgba(255,255,255,0.12); }
 </head>
 <body>
 <div class="app">
+
+  <!-- Bouton config -->
+  <div class="cfg-btn" id="cfgBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </div>
+
+  <!-- Indicateur connexion -->
+  <div class="conn-dot disconnected" id="connDot"></div>
+
+  <!-- Modale config IP -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>IP de l'ESP32</h3>
+      <input type="text" id="ipInput" placeholder="192.168.1.100" inputmode="decimal"/>
+      <div class="modal-btns">
+        <button class="modal-btn" id="modalCancel">Annuler</button>
+        <button class="modal-btn primary" id="modalSave">Connecter</button>
+      </div>
+    </div>
+  </div>
 
   <div class="nav">
     <div class="arrow" id="prev">
@@ -620,12 +732,133 @@ document.addEventListener('touchend', e => {
 }, { passive: true });
 
 // ═══════════════════════════
+//  WEBSOCKET + CONFIG
+// ═══════════════════════════
+let ws = null;
+let wsConnected = false;
+const connDot = document.getElementById('connDot');
+
+function wsConnect(ip) {
+  if (ws) { ws.close(); ws = null; }
+  try {
+    ws = new WebSocket(`ws://${ip}/ws`);
+    ws.onopen = () => {
+      wsConnected = true;
+      connDot.className = 'conn-dot connected';
+      // Envoie l'état sauvegardé dès la connexion
+      sendState(0);
+      sendState(1);
+    };
+    ws.onclose = () => {
+      wsConnected = false;
+      connDot.className = 'conn-dot disconnected';
+      // Retente toutes les 5s
+      setTimeout(() => {
+        const ip = localStorage.getItem('espIP');
+        if (ip) wsConnect(ip);
+      }, 5000);
+    };
+    ws.onerror = () => {
+      wsConnected = false;
+      connDot.className = 'conn-dot disconnected';
+    };
+  } catch(e) {}
+}
+
+function sendState(idx) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  const ch = channels[idx];
+  const msg = { canal: idx + 1, on: ch.on, valeur: Math.round(ch.value) };
+  if (idx === 1) {
+    const l = 50 + (1 - wSat) * 44;
+    const rgb = hslToRgb(wHue, wSat, l / 100);
+    msg.r = rgb[0]; msg.g = rgb[1]; msg.b = rgb[2];
+  }
+  ws.send(JSON.stringify(msg));
+}
+
+function hslToRgb(h, s, l) {
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255);
+  };
+  return [f(0), f(8), f(4)];
+}
+
+// ── MODAL CONFIG ──
+const modalOverlay = document.getElementById('modalOverlay');
+const ipInput      = document.getElementById('ipInput');
+
+document.getElementById('cfgBtn').addEventListener('click', () => {
+  ipInput.value = localStorage.getItem('espIP') || '192.168.1.100';
+  modalOverlay.classList.add('open');
+});
+document.getElementById('modalCancel').addEventListener('click', () => {
+  modalOverlay.classList.remove('open');
+});
+document.getElementById('modalSave').addEventListener('click', () => {
+  const ip = ipInput.value.trim();
+  if (ip) {
+    localStorage.setItem('espIP', ip);
+    wsConnect(ip);
+  }
+  modalOverlay.classList.remove('open');
+});
+modalOverlay.addEventListener('click', e => {
+  if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+});
+
+// ── LOCALSTORAGE — sauvegarde état ──
+function saveState() {
+  localStorage.setItem('ledState', JSON.stringify({
+    ch0: { on: channels[0].on, value: channels[0].value },
+    ch1: { on: channels[1].on, value: channels[1].value },
+    hue: wHue, sat: wSat
+  }));
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ledState'));
+    if (!s) return;
+    channels[0].on    = s.ch0.on;
+    channels[0].value = s.ch0.value;
+    channels[1].on    = s.ch1.on;
+    channels[1].value = s.ch1.value;
+    wHue = s.hue || 0;
+    wSat = s.sat || 0;
+  } catch(e) {}
+}
+
+// ── Patch renderCh pour envoyer + sauvegarder ──
+const _renderCh = renderCh;
+renderCh = function(idx) {
+  _renderCh(idx);
+  sendState(idx);
+  saveState();
+};
+
+// ── Patch handleWheel pour envoyer ──
+const _handleWheel = handleWheel;
+handleWheel = function(e) {
+  _handleWheel(e);
+  sendState(1);
+  saveState();
+};
+
+// ═══════════════════════════
 //  INIT
 // ═══════════════════════════
-placeCursor(0, 0);
+loadState();
+placeCursor(wHue, wSat);
 renderCh(0);
 renderCh(1);
 renderNav();
+
+// Auto-connect si IP déjà sauvegardée
+const savedIP = localStorage.getItem('espIP');
+if (savedIP) wsConnect(savedIP);
 </script>
 </body>
 </html>
